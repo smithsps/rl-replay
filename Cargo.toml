@@ -1,0 +1,6 @@
+[package]
+name = "rl-stats"
+version = "0.1.0"
+authors = ["Simon Smith"]
+
+[dependencies]
