@@ -8,8 +8,8 @@ use std::io::prelude::*;
 use std::str::from_utf8;
 use nom::*;
 
-static REPLAY_FILE_STR: &'static str = "replays/DB55DE0C49529D55D2D1E0B024869CF3.replay";
-//static REPLAY_FILE_STR: &'static str = "replays/F32599A54B1831A58C6C55A5334890AF.replay";
+//static REPLAY_FILE_STR: &'static str = "replays/DB55DE0C49529D55D2D1E0B024869CF3.replay";
+static REPLAY_FILE_STR: &'static str = "replays/F32599A54B1831A58C6C55A5334890AF.replay";
 const DEFAULT_REPLAY_BUFFER: usize = 5400; // 2MB
 
 /*
@@ -98,6 +98,15 @@ named!(qword_property,
         property_size: le_u64 >>
         bytes: take!(8) >>
         (bytes)
+    )
+);
+
+named!(float_property<f32>, 
+    do_parse!(
+        tag!(b"\x0E\x00\x00\x00FloatProperty\0") >>
+        length: le_u64 >>
+        float: le_f32 >>
+        (float)
     )
 );
 
@@ -281,16 +290,95 @@ struct MetaInfo<'a> {
     date: &'a str,
     num_frames: u32,
     match_type: &'a str,
-    online_player_name: &'a str,
+    creator_player_name: &'a str
 }
 
-named!(meta_info <Vec<MetaInfo>>,
+named!(meta_info <MetaInfo>,
     do_parse!(
-        rest: rest >>
+        tag!(b"\x0E\x00\x00\x00ReplayVersion\0") >>
+        replay_version: int_property >>
+
+        tag!(b"\x0C\x00\x00\x00GameVersion\0") >>
+        game_version: int_property >>
+
+        tag!(b"\x08\x00\x00\x00BuildID\0") >>
+        build_id: int_property >>
+
+        tag!(b"\x0B\x00\x00\x00Changelist\0") >>
+        changelist: int_property >>
+
+        tag!(b"\x0D\x00\x00\x00BuildVersion\0") >>
+        build_version: str_property >>
+
+        tag!(b"\x0A\x00\x00\x00RecordFPS\0") >>
+        record_fps: float_property >>
+
+        tag!(b"\x0E\x00\x00\x00KeyframeDelay\0") >>
+        keyframe_delay: float_property >>
+
+        tag!(b"\x0C\x00\x00\x00MaxChannels\0") >>
+        max_channels: int_property >>
+
+        tag!(b"\x10\x00\x00\x00MaxReplaySizeMB\0") >>
+        max_replay_size_mb: int_property >>
+
+        tag!(b"\x03\x00\x00\x00Id\0") >>
+        id: str_property >>
+
+        tag!(b"\x08\x00\x00\x00MapName\0") >>
+        map_name: name_property >>
+
+        tag!(b"\x05\x00\x00\x00Date\0") >>
+        date: str_property >>
+
+        tag!(b"\x0A\x00\x00\x00NumFrames\0") >>
+        num_frames: int_property >>
+
+        tag!(b"\x0A\x00\x00\x00MatchType\0") >>
+        match_type: name_property >>
+
+        tag!(b"\x0B\x00\x00\x00PlayerName\0") >>
+        player_name: str_property >>
+
+        str_None >>
+
+        (MetaInfo {
+            replay_version: replay_version,
+            game_version: game_version, 
+            build_id: build_id,
+            changelist: changelist,
+            build_version: build_version,
+            record_fps: record_fps,
+            keyframe_delay: keyframe_delay,
+            max_channels: max_channels,
+            max_replay_size_mb: max_replay_size_mb,
+            id: id,
+            map_name: map_name,
+            date: date,
+            num_frames: num_frames,
+            match_type: match_type,
+            creator_player_name: player_name
+        })
     )
 );
 
-named!(get_header<(Vec<PlayerStats>)>,
+#[derive(Debug)]
+struct ReplayFile<'a> {
+    crc: &'a [u8],
+    version_major: u32,
+    version_minor: u32,
+
+    team_size: u32,
+    team_0_score: u32,
+    team_1_score: u32,
+
+    goals: Vec<Goal<'a>>,
+    highlights: Vec<Highlight<'a>>,
+    stats: Vec<PlayerStats<'a>>,
+    meta: MetaInfo<'a>
+}
+
+named!(get_header<(ReplayFile)>,
     do_parse!(
         crc: take!(4) >>
         version_major: le_u32 >>
@@ -315,8 +403,23 @@ named!(get_header<(Vec<PlayerStats>)>,
 
         stats: playerstats_array >>
 
-        rest: rest >>
-        (stats)
+        meta: meta_info >>
+
+        //rest: rest >>
+        (ReplayFile{
+            crc: crc,
+            version_major: version_major,
+            version_minor: version_minor,
+
+            team_size: team_size,
+            team_0_score: team_0_score,
+            team_1_score: team_1_score,
+
+            goals: goals,
+            highlights: highlights,
+            stats: stats,
+            meta: meta
+        })
     )
 );
 
