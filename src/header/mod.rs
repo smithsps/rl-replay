@@ -20,9 +20,9 @@ use header::primitives::*;
 
 #[derive(Debug)]
 pub struct ReplayHeader<'a> {
-    //crc: &'a [u8],
     version_major: u32,
     version_minor: u32,
+    net_version: Option<u32>,
 
     team_size: u32,
     team_0_score: u32,
@@ -37,10 +37,9 @@ pub struct ReplayHeader<'a> {
 
 named!(pub get_header<(ReplayHeader)>,
     do_parse!(
-        //crc: take!(4) >>
         version_major: dbg_dmp!(le_u32) >>
         version_minor: dbg_dmp!(le_u32) >>
-        unknown_perhaps_version_detail: take!(4) >>
+        net_version: cond!(version_major >= 868 && version_minor >= 18, le_u32) >>
         tag!(b"\x18\x00\x00\x00TAGame.Replay_Soccar_TA\0") >>
 
         tag!(b"\x09\x00\x00\x00TeamSize\0") >>
@@ -68,6 +67,7 @@ named!(pub get_header<(ReplayHeader)>,
             //crc: crc,
             version_major: version_major,
             version_minor: version_minor,
+            net_version: net_version,
 
             team_size: team_size,
             team_0_score: team_0_score,

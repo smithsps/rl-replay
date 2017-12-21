@@ -9,8 +9,8 @@ use nom::*;
 
 mod header;
 
-static REPLAY_FILE_STR: &'static str = "replays/1EBA9EA845DB4BD7809E78A7F4A7F1EC.replay";
-//static REPLAY_FILE_STR: &'static str = "replays/F32599A54B1831A58C6C55A5334890AF.replay";
+//static REPLAY_FILE_STR: &'static str = "replays/1EBA9EA845DB4BD7809E78A7F4A7F1EC.replay";
+static REPLAY_FILE_STR: &'static str = "replays/F32599A54B1831A58C6C55A5334890AF.replay";
 const DEFAULT_REPLAY_BUFFER: usize = 5400;
 
 
