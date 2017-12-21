@@ -20,16 +20,19 @@ fn parse(file: &str) -> io::Result<()> {
 
     let mut hlen_buf = [0; 4];
     file.read_exact(&mut hlen_buf);
-    let (_, mut header_length) = le_u32(&mut hlen_buf).unwrap();
-    header_length += 4; // CRC is not included. 
+    let (_, header_length) = le_u32(&mut hlen_buf).unwrap();
+    
+    //header_length += 4; // CRC is not initially included. 
+    let mut replay_crc = [0; 4];
+    file.read_exact(&mut replay_crc);
 
     println!("{:?}", header_length);
 
     let mut h_buf = BufReader::with_capacity(header_length as usize, file);
     let h_bytes = h_buf.fill_buf()?;
 
-    let head = header::get_header(h_bytes).to_result().unwrap();
-    println!("{:?}", head);
+    let header = header::get_header(h_bytes).to_result().unwrap();
+    println!("{:?}", header);
 
     Ok(())
 }
