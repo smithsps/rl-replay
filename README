@@ -1,0 +1,78 @@
+Lots of thanks to https://github.com/jjbott/RocketLeagueReplayParser and https://github.com/tfausak/octane
+
+For another Rust flavored Rocket League parser go check out: https://github.com/nickbabcock/boxcars
+
+Rocket League Replay Format
+
+File Structure:
+<Header-Length><CRC><Header-Data>
+<Body-Length><CRC><Body-Data> (Or rather Match/Event/Netdata/etc.)
+
+Header Format:
+
+<4 bytes - Header Length>
+<4 bytes - Header CRC>
+
+Header Data:
+
+<4 bytes - Version Major>
+<4 bytes - Version Minor>
+<4 bytes - Net Version - (Only if Version Major >= 868 and Minor >= 18)>
+<string TAGame.Replay_Soccar_TA>
+
+<IntProperty TeamSize>
+<IntProperty PrimaryPlayerTeam>
+<IntProperty Team0Score>
+<IntProperty Team1Score>
+
+Goals Array:
+Goal Object {
+    <IntProperty Frame>
+    <StrProperty Name>
+    <IntProperty Team>
+    <Delimiting None String>
+}
+
+Highlights Array:
+Highlight Object {
+    <IntProperty Frame>
+    <StrProperty Car_Name>
+    <StrProperty Ball_Name>
+}
+
+Player Stats Table:
+Player_Stats Object {
+    <StrProperty Player_Name>
+    <ByteProperty Platform>
+    <RawString OnlinePlatform>
+    <QWordProperty OnlineID>
+    <IntProperty Team>
+    <IntProperty Score>
+    <IntProperty Goals>
+    <IntProperty Assists>
+    <IntProperty Saves>
+    <IntProperty Shots>
+    <BoolProperty Bot>
+}
+
+Meta Information Table:
+Meta Table {
+    <StrProperty Replay_Name - (Optional)>
+    <IntProperty Replay_Version>
+    <IntProperty Game_Version>
+    <IntProperty Build_ID>
+    <IntProperty Changelist>
+    <StrProperty Build_Version>
+    <FloatProperty Record_FPS>
+    <FloatProperty Keyframe_Delay>
+    <IntProperty Max_Channels>
+    <IntProperty MaxReplaySizeMB>
+    <StrProperty ID>
+    <NameProperty Map_Name>
+    <StrProperty Date>
+    <IntProperty Total_Frames>
+    <NameProperty Match_Type>
+    <StrProperty Recording_Player_Name>
+}
+
+
