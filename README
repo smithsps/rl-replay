@@ -15,9 +15,9 @@ Header Format:
 
 Header Data:
 
-<4 bytes - Version Major>
-<4 bytes - Version Minor>
-<4 bytes - Net Version - (Only if Version Major >= 868 and Minor >= 18)>
+<4 bytes - Engine Version>
+<4 bytes - License Version>
+<4 bytes - Patch Version  - (Only if Version Major >= 868 and Minor >= 18)>
 <string TAGame.Replay_Soccar_TA>
 
 <IntProperty TeamSize>
