@@ -5,7 +5,7 @@ For another Rust flavored Rocket League parser go check out: https://github.com/
 Rocket League Replay Format
 
 File Structure:
-<Header-Length><CRC><Header-Data>
+<Header-Length><CRC><Header-Data> (Stats and Meta data)
 <Body-Length><CRC><Body-Data> (Or rather Match/Event/Netdata/etc.)
 
 Header Format:

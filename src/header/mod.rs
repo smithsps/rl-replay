@@ -6,7 +6,8 @@ mod highlights;
 mod metadata;
 mod player_stats;
 mod goals;
-mod primitives;
+#[macro_use]
+pub mod primitives;
 
 use header::highlights::{Highlight, highlight_array};
 use header::metadata::{MetaInfo, meta_info};

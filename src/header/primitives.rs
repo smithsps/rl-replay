@@ -1,6 +1,9 @@
 // Primitives
 
+use std;
+use std::str;
 use nom::*;
+
 
 named!(pub str_none, tag!(b"\x05\x00\x00\x00None\0"));
 
@@ -87,3 +90,31 @@ named!(pub raw_string<&str>,
         (string)
     )
 );
+
+/*
+In my hubris, I thought I could purge unnecessary evil from this world.
+Instead I have made this blabbering toxic waste of a macro.
+Please not think of its corrupted inwards, or thou shall be blinded.
+#[macro_export]
+macro_rules! rl_str {
+    ($str:tt) => {
+        {
+            // Get length of String in Little Endian
+            let len_bytes: [u8; 4] = unsafe {
+                std::mem::transmute(($str.len() as u32).to_le())
+            };
+            let mut temp_vec = Vec::new();
+            // Length
+            temp_vec.extend_from_slice(&len_bytes);
+            // Characters
+            temp_vec.extend_from_slice($str.as_bytes());
+            // Null Terminator
+            temp_vec.push(0);
+            println!("\n{:?}", temp_vec);
+
+            let mut temp_slice: &[u8] = &[0];
+            temp_slice.clone_from_slice(&temp_vec);
+            temp_slice
+        }
+    }
+}*/
