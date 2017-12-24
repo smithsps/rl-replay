@@ -6,7 +6,6 @@ mod highlights;
 mod metadata;
 mod player_stats;
 mod goals;
-#[macro_use]
 pub mod primitives;
 
 use header::highlights::{Highlight, highlight_array};
@@ -14,9 +13,6 @@ use header::metadata::{MetaInfo, meta_info};
 use header::player_stats::{PlayerStats, playerstats_array};
 use header::goals::{Goal, goals_array};
 use header::primitives::*;
-
-
-//named!(str_None, tag!(b"\x05\x00\x00\x00None\0"));
 
 
 #[derive(Debug)]
@@ -63,9 +59,7 @@ named!(pub get_header<(ReplayHeader)>,
 
         meta: dbg_dmp!(meta_info) >>
 
-        //rest: rest >>
         (ReplayHeader {
-            //crc: crc,
             engine_version: engine_version,
             license_version: license_version,
             patch_version: patch_version,

@@ -9,6 +9,7 @@ use std::io::{Error, ErrorKind};
 use nom::le_u32;
 
 mod header;
+mod body;
 mod crc32_rl;
 
 //static REPLAY_FILE_STR: &'static str = "replays/7560D3FE446244A56C0EB198007F2B92.replay";
@@ -45,7 +46,10 @@ fn parse(file: &str) -> io::Result<()> {
         return Err(Error::new(ErrorKind::InvalidData, "Body CRC does not match body data."))
     }
 
+    let body = body::get_body(&body_bytes).to_result().unwrap();
+
     println!("\nBody - Size: {}  |  CRC: {:08X}", body_length, body_crc);
+    println!("{:?}", body);
 
     Ok(())
 }
