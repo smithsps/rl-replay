@@ -1,6 +1,5 @@
 // Primitives
 
-use std;
 use std::str;
 use nom::*;
 
