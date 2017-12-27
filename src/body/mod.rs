@@ -1,6 +1,7 @@
 // Body Parsing
 
 use nom::*;
+use std::collections::BTreeMap;
 
 
 #[derive(Debug)]
@@ -108,16 +109,34 @@ named!(pub class_index_array <Vec<ClassIndex>>,
 );
 
 #[derive(Debug)]
-pub struct ClassNetCache<> {
-    length: u32
+pub struct ClassNetCache {
+    object_index: i32,
+    parent_id: i32,
+    id: i32,
+    properties: BTreeMap<i32, i32>
 }
 
-named!(pub get_class_net_cache <ClassNetCache>,
+named!(pub class_net_cache_array <Vec<ClassNetCache>>,
     do_parse!(
-        length: le_u32 >>
-        (ClassNetCache {
-            length: length
-        })
+        caches: length_count!(le_u32, do_parse!(
+            object_index: le_i32 >>
+            parent_id: le_i32 >>
+            id: le_i32 >>
+            p_len: le_i32 >>
+            props: fold_many_m_n!(p_len as usize, p_len as usize,
+                                  tuple!(le_i32, le_i32), BTreeMap::new(),
+                                  |mut props: BTreeMap<i32, i32>, x: (i32, i32)| {
+                props.insert(x.0, x.1);
+                props
+            }) >>
+            (ClassNetCache {
+                object_index: object_index,
+                parent_id: parent_id,
+                id: id,
+                properties: props
+            })
+        )) >>
+        (caches)
     )
 );
 
@@ -141,7 +160,7 @@ pub struct ReplayBody<'a> {
     objects: Vec<&'a str>,
     names: Vec<&'a str>,
     class_indexes: Vec<ClassIndex<'a>>,
-    class_net_cache: ClassNetCache,
+    class_net_cache: Vec<ClassNetCache>
 }
 
 named!(pub get_body<(ReplayBody)>,
@@ -155,7 +174,7 @@ named!(pub get_body<(ReplayBody)>,
         objects: length_count!(le_u32, raw_string) >>
         names: length_count!(le_u32, raw_string) >>
         class_indexes: class_index_array >>
-        class_net_cache: get_class_net_cache >>
+        class_net_cache: class_net_cache_array >>
 
         (ReplayBody {
             levels: levels,
