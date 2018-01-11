@@ -49,7 +49,7 @@ fn parse(file: &str) -> io::Result<()> {
     let body = body::get_body(&body_bytes).to_result().unwrap();
 
     println!("\nBody - Size: {}  |  CRC: {:08X}", body_length, body_crc);
-    println!("{:?}", body);
+    //println!("{:?}", body);
 
     Ok(())
 }

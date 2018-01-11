@@ -3,6 +3,7 @@
 use nom::*;
 use std::collections::BTreeMap;
 
+mod network_stream;
 
 #[derive(Debug)]
 pub struct Keyframe {
@@ -29,16 +30,18 @@ named!(pub keyframe_array <Vec<Keyframe>>,
 );
 
 #[derive(Debug)]
-pub struct NetworkStream<> {
-    length: u32
+pub struct RawNetworkStream<'a> {
+    length: u32,
+    bytes: &'a [u8]
 }
 
-named!(pub get_netstream <NetworkStream>,
+named!(pub get_raw_netstream <RawNetworkStream>,
     do_parse!(
         length: le_u32 >>
-        take!(length) >>
-        (NetworkStream {
-            length: length
+        bytes: take!(length) >>
+        (RawNetworkStream {
+            length: length,
+            bytes: bytes
         })
     )
 );
@@ -88,23 +91,19 @@ named!(pub tick_marks_array <Vec<TickMark>>,
     )
 );
 
-#[derive(Debug)]
-pub struct ClassIndex<'a> {
-    class: &'a str,
-    index: i32
-}
 
-named!(pub class_index_array <Vec<ClassIndex>>,
+named!(pub class_index_array <BTreeMap<i32, String>>,
     do_parse!(
-        class_indexs: length_count!(le_u32, do_parse!(
-            class: raw_string >>
-            index: le_i32 >>
-            (ClassIndex {
-                class: class,
-                index: index
-            })
-        )) >>
-        (class_indexs)
+        // Apply tuple!(raw_string, le_i32), length number of times.
+        // Then insert these into a created BTreeMap
+        length: le_u32 >>
+        classes: fold_many_m_n!(length as usize, length as usize,
+                      tuple!(raw_string, le_i32), BTreeMap::new(),
+                      |mut classes: BTreeMap<i32, String>, x: (&str, i32)| {
+            classes.insert(x.1, x.0.to_owned());
+            classes
+        }) >>
+        (classes)
     )
 );
 
@@ -123,6 +122,9 @@ named!(pub class_net_cache_array <Vec<ClassNetCache>>,
             parent_id: le_i32 >>
             id: le_i32 >>
             p_len: le_i32 >>
+
+            // Apply tuple!(le_i32, le_i32), p_len number of times.
+            // Then insert these into a created BTreeMap
             props: fold_many_m_n!(p_len as usize, p_len as usize,
                                   tuple!(le_i32, le_i32), BTreeMap::new(),
                                   |mut props: BTreeMap<i32, i32>, x: (i32, i32)| {
@@ -153,13 +155,13 @@ named!(pub raw_string<&str>,
 pub struct ReplayBody<'a> {
     levels: Vec<&'a str>,
     keyframes: Vec<Keyframe>,
-    network_stream: NetworkStream,
+    raw_network_stream: RawNetworkStream<'a>,
     debug_strings: Vec<DebugString<'a>>,
     tick_marks: Vec<TickMark<'a>>,
     packages: Vec<&'a str>,
     objects: Vec<&'a str>,
     names: Vec<&'a str>,
-    class_indexes: Vec<ClassIndex<'a>>,
+    class_indexes: BTreeMap<i32, String>,
     class_net_cache: Vec<ClassNetCache>
 }
 
@@ -167,7 +169,7 @@ named!(pub get_body<(ReplayBody)>,
     do_parse!(
         levels: length_count!(le_u32, raw_string) >>
         keyframes: keyframe_array >>
-        network_stream: get_netstream >>
+        raw_network_stream: get_raw_netstream >>
         debug_strings: debug_strings_array >>
         tick_marks: tick_marks_array >>
         packages: length_count!(le_u32, raw_string) >>
@@ -179,7 +181,7 @@ named!(pub get_body<(ReplayBody)>,
         (ReplayBody {
             levels: levels,
             keyframes: keyframes,
-            network_stream: network_stream,
+            raw_network_stream: raw_network_stream,
             debug_strings: debug_strings,
             tick_marks: tick_marks,
             packages: packages,
