@@ -1,5 +1,6 @@
 #[macro_use]
 extern crate nom;
+extern crate rl_replays;
 
 use std::io;
 use std::fs::File;
@@ -8,13 +9,8 @@ use std::io::prelude::*;
 use std::io::{Error, ErrorKind};
 use nom::le_u32;
 
-mod header;
-mod body;
-mod crc32_rl;
+use rl_replays::{header, body, crc32_rl};
 
-//static REPLAY_FILE_STR: &'static str = "replays/7560D3FE446244A56C0EB198007F2B92.replay";
-static REPLAY_FILE_STR: &'static str = "replays/1EBA9EA845DB4BD7809E78A7F4A7F1EC.replay";
-//static REPLAY_FILE_STR: &'static str = "replays/F32599A54B1831A58C6C55A5334890AF.replay";
 //const DEFAULT_REPLAY_BUFFER: usize = 2 * 1024 * 1024;
 
 
@@ -46,7 +42,7 @@ fn parse(file: &str) -> io::Result<()> {
         return Err(Error::new(ErrorKind::InvalidData, "Body CRC does not match body data."))
     }
 
-    let body = body::get_body(&body_bytes).to_result().unwrap();
+    let _body = body::get_body(&body_bytes).to_result().unwrap();
 
     println!("\nBody - Size: {}  |  CRC: {:08X}", body_length, body_crc);
     //println!("{:?}", body);
@@ -62,7 +58,11 @@ fn read_u32(file: &mut BufReader<File>) -> io::Result<u32> {
     }
 }
 
+#[test]
+fn integratation_test() {
+    //static REPLAY_FILE_STR: &'static str = "replays/7560D3FE446244A56C0EB198007F2B92.replay";
+    static REPLAY_FILE_STR: &'static str = "replays/1EBA9EA845DB4BD7809E78A7F4A7F1EC.replay";
+    //static REPLAY_FILE_STR: &'static str = "replays/F32599A54B1831A58C6C55A5334890AF.replay";
 
-fn main() {
     parse(REPLAY_FILE_STR).unwrap();
 }
