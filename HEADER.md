@@ -1,19 +1,14 @@
-Lots of thanks to https://github.com/jjbott/RocketLeagueReplayParser and https://github.com/tfausak/octane
 
-For another Rust flavored Rocket League parser go check out: https://github.com/nickbabcock/boxcars
+### Header Structure:
 
-Rocket League Replay Format
-
-File Structure:
 <Header-Length><CRC><Header-Data> (Stats and Meta data)
 <Body-Length><CRC><Body-Data> (Or rather Match/Event/Netdata/etc.)
 
-Header Format:
 
+
+```
 <4 bytes - Header Length>
 <4 bytes - Header CRC>
-
-Header Data:
 
 <4 bytes - Engine Version>
 <4 bytes - License Version>
@@ -74,5 +69,5 @@ Meta Table {
     <NameProperty Match_Type>
     <StrProperty Recording_Player_Name>
 }
-
+```
 
